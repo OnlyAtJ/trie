@@ -1,7 +1,6 @@
 package trie
 
 import (
-	"errors"
 	"github.com/OnlyAtJ/trie/enum/ReplaceType"
 )
 
@@ -30,24 +29,29 @@ type Trie struct {
 }
 
 // 添加词库内容
-func (t *Trie) Add(keyword string) error {
-	if keyword == "" {
+func (t *Trie) Add(keywords ...string) error {
+	if len(keywords) == 0 {
 		return ErrKeywordCanNotBeEmpty
 	}
-
-	runeChars := []rune(keyword)
-
-	node := t.Root
-	for i := 0; i < len(runeChars); i++ {
-		runeChar := runeChars[i]
-
-		if _, ok := node.Children[runeChar]; !ok {
-			// 不存在，初始化子节点的map
-			node.Children[runeChar] = NewTrieNode()
+	for _, keyword := range keywords {
+		if keyword == "" {
+			return ErrKeywordCanNotBeEmpty
 		}
-		node = node.Children[runeChar] // 迭代
+
+		runeChars := []rune(keyword)
+
+		node := t.Root
+		for i := 0; i < len(runeChars); i++ {
+			runeChar := runeChars[i]
+
+			if _, ok := node.Children[runeChar]; !ok {
+				// 不存在，初始化子节点的map
+				node.Children[runeChar] = NewTrieNode()
+			}
+			node = node.Children[runeChar] // 迭代
+		}
+		node.End = true // 叶子节点
 	}
-	node.End = true // 叶子节点
 
 	return nil
 }
@@ -80,12 +84,18 @@ func (t *Trie) remove(pNode *Node, runeChars []rune, index int) {
 }
 
 // 删除词库内容
-func (t *Trie) Remove(keyword string) error {
-	if keyword == "" {
-		return errors.New("keyword can not be empty")
+func (t *Trie) Remove(keywords ...string) error {
+	if len(keywords) == 0 {
+		return ErrKeywordCanNotBeEmpty
 	}
-	runeChars := []rune(keyword)
-	t.remove(t.Root, runeChars, 0)
+	
+	for _, keyword := range keywords {
+		if keyword == "" {
+			return ErrKeywordCanNotBeEmpty
+		}
+		runeChars := []rune(keyword)
+		t.remove(t.Root, runeChars, 0)
+	}
 
 	return nil
 }
@@ -128,7 +138,7 @@ func (t *Trie) Replace(text string, opts ...ReplaceOption) string {
 			if defaultSetting.ReplaceType == ReplaceType.Holder {
 				res = append(res, defaultSetting.PlaceHolder)
 			}
-			
+
 			// delete则自动不添加
 
 			j++
