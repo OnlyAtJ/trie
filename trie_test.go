@@ -61,10 +61,14 @@ func TestTrie_FindForbiddenString(t *testing.T) {
 	_ = tr.Add("习大大")
 
 	text := "我是测试的语句，用来测试敏感词，我爱毛主席，习大大威武"
-	act := tr.Replace(text, '*')
+	act := tr.Replace(text, WithPlaceHolder('*'))
 	ast.EqualValues("我是**的语句，用来*****，我爱***，***威武", act)
 
 	text = "这段文字不包含"
-	act = tr.Replace(text, '*')
+	act = tr.Replace(text, WithPlaceHolder('*'))
 	ast.EqualValues("这段文字不包含", act)
+
+	text = "我是测试的语句，用来测试敏感词，我爱毛主席，习大大威武"
+	act = tr.Replace(text, WithDelete())
+	ast.EqualValues("我是的语句，用来，我爱，威武", act)
 }

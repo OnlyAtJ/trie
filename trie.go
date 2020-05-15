@@ -2,6 +2,7 @@ package trie
 
 import (
 	"errors"
+	"github.com/OnlyAtJ/trie/enum/ReplaceType"
 )
 
 type Node struct {
@@ -89,7 +90,15 @@ func (t *Trie) Remove(keyword string) error {
 	return nil
 }
 
-func (t *Trie) Replace(text string, placeHolder rune) string {
+func (t *Trie) Replace(text string, opts ...ReplaceOption) string {
+	defaultSetting := ReplaceSetting{
+		ReplaceType: ReplaceType.Holder,
+		PlaceHolder: '*',
+	}
+	for _, opt := range opts {
+		opt.Apply(&defaultSetting)
+	}
+
 	runes := []rune(text)
 	length := len(runes)
 	res := make([]rune, 0)
@@ -116,7 +125,12 @@ func (t *Trie) Replace(text string, placeHolder rune) string {
 				break Loop
 			}
 
-			res = append(res, placeHolder)
+			if defaultSetting.ReplaceType == ReplaceType.Holder {
+				res = append(res, defaultSetting.PlaceHolder)
+			}
+			
+			// delete则自动不添加
+
 			j++
 		}
 
